@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест — Академия продаж</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> Академия продаж</div>
+    <nav>
+      <a href="dashboard.html">Мои курсы</a>
+      <a href="knowledge-base.html">База знаний</a>
+      <a href="admin.html" data-admin-link style="display:none">Админка</a>
+    </nav>
+    <div class="sidebar-user">
+      <b data-user-name>—</b>
+      <span data-user-role>—</span><br>
+      <a href="#" data-logout style="color:#C6CBD1">Выйти</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div class="eyebrow" id="backLink"><a href="dashboard.html" style="color:inherit">← К курсу</a></div>
+      <h1 id="testTitle">—</h1>
+    </div>
+
+    <div id="resultBanner"></div>
+    <form id="testForm"></form>
+    <button class="btn btn-brass" id="submitBtn" style="margin-top:1rem">Отправить ответы</button>
+  </main>
+</div>
+
+<script type="module" src="js/test.js"></script>
+</body>
+</html>
