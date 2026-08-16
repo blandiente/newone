@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка — Академия продаж</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> Академия продаж</div>
+    <nav>
+      <a href="dashboard.html">Мои курсы</a>
+      <a href="knowledge-base.html">База знаний</a>
+      <a href="admin.html" class="active" data-admin-link>Админка</a>
+    </nav>
+    <div class="sidebar-user">
+      <b data-user-name>—</b>
+      <span data-user-role>—</span><br>
+      <a href="#" data-logout style="color:#C6CBD1">Выйти</a>
+    </div>
+  </aside>
+
+  <main class="main" style="max-width:1100px">
+    <div class="page-head">
+      <div class="eyebrow">Управление площадкой</div>
+      <h1>Админка</h1>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="users">Пользователи</button>
+      <button class="tab-btn" data-tab="courses">Курсы и уроки</button>
+      <button class="tab-btn" data-tab="tests">Тесты</button>
+      <button class="tab-btn" data-tab="kb">База знаний</button>
+      <button class="tab-btn" data-tab="progress">Прогресс</button>
+    </div>
+
+    <!-- ПОЛЬЗОВАТЕЛИ -->
+    <section class="tab-panel active" id="tab-users">
+      <div class="two-col">
+        <div class="card">
+          <h3>Создать пользователя</h3>
+          <form id="createUserForm">
+            <div class="field"><label>Имя</label><input type="text" id="nu_name" required></div>
+            <div class="field"><label>Email (логин)</label><input type="email" id="nu_email" required></div>
+            <div class="field"><label>Пароль</label><input type="text" id="nu_password" required minlength="8" placeholder="Минимум 8 символов"></div>
+            <div class="field">
+              <label>Роль</label>
+              <select id="nu_role">
+                <option value="manager">Менеджер по продажам</option>
+                <option value="admin">Администратор</option>
+              </select>
+            </div>
+            <button class="btn btn-brass" type="submit" id="createUserBtn">Создать аккаунт</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Все пользователи</h3>
+          <table class="table" id="usersTable"><tbody><tr><td class="muted">Загрузка…</td></tr></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <!-- КУРСЫ И УРОКИ -->
+    <section class="tab-panel" id="tab-courses">
+      <div class="card" style="margin-bottom:1.4rem">
+        <h3>Новый курс</h3>
+        <form id="createCourseForm" class="two-col" style="align-items:end">
+          <div class="field"><label>Название курса</label><input type="text" id="c_title" required></div>
+          <div class="field"><label>Описание</label><input type="text" id="c_desc"></div>
+          <button class="btn btn-brass" type="submit" style="grid-column:1/-1;justify-self:start">Добавить курс</button>
+        </form>
+      </div>
+      <div id="coursesAdminList"></div>
+    </section>
+
+    <!-- ТЕСТЫ -->
+    <section class="tab-panel" id="tab-tests">
+      <div class="card" style="margin-bottom:1.4rem">
+        <h3>Новый тест</h3>
+        <form id="createTestForm" class="two-col" style="align-items:end">
+          <div class="field">
+            <label>Курс</label>
+            <select id="t_course" required></select>
+          </div>
+          <div class="field"><label>Название теста</label><input type="text" id="t_title" required></div>
+          <div class="field"><label>Проходной балл, %</label><input type="number" id="t_pass" value="70" min="1" max="100"></div>
+          <button class="btn btn-brass" type="submit" style="grid-column:1/-1;justify-self:start">Создать тест</button>
+        </form>
+      </div>
+      <div id="testsAdminList"></div>
+    </section>
+
+    <!-- БАЗА ЗНАНИЙ -->
+    <section class="tab-panel" id="tab-kb">
+      <div class="card" style="margin-bottom:1.4rem">
+        <h3>Новая статья</h3>
+        <form id="createKbForm">
+          <div class="two-col">
+            <div class="field"><label>Категория</label><input type="text" id="kb_category" placeholder="Напр. Холодные звонки" required></div>
+            <div class="field"><label>Заголовок</label><input type="text" id="kb_title" required></div>
+          </div>
+          <div class="field"><label>Текст</label><textarea id="kb_content" rows="5" required></textarea></div>
+          <button class="btn btn-brass" type="submit">Опубликовать</button>
+        </form>
+      </div>
+      <div id="kbAdminList"></div>
+    </section>
+
+    <!-- ПРОГРЕСС -->
+    <section class="tab-panel" id="tab-progress">
+      <div class="card">
+        <h3>Результаты тестов по менеджерам</h3>
+        <table class="table" id="progressTable"><tbody><tr><td class="muted">Загрузка…</td></tr></tbody></table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

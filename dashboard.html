@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мои курсы — Академия продаж</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="dot"></span> Академия продаж</div>
+    <nav>
+      <a href="dashboard.html" class="active">Мои курсы</a>
+      <a href="knowledge-base.html">База знаний</a>
+      <a href="admin.html" data-admin-link style="display:none">Админка</a>
+    </nav>
+    <div class="sidebar-user">
+      <b data-user-name>—</b>
+      <span data-user-role>—</span><br>
+      <a href="#" data-logout style="color:#C6CBD1">Выйти</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="page-head">
+      <div class="eyebrow">Обучение</div>
+      <h1>Мои курсы</h1>
+      <p class="muted">Проходите уроки по порядку и сдавайте тесты в конце каждого курса.</p>
+    </div>
+
+    <div class="listing-grid" id="courseList">
+      <p class="muted">Загрузка курсов…</p>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

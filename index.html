@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — Академия продаж недвижимости</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-mark">А</div>
+    <h1>Академия продаж</h1>
+    <p class="login-sub">Внутренняя система обучения. Доступ выдаётся администратором — самостоятельная регистрация недоступна.</p>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" type="submit" id="submitBtn" style="width:100%">Войти</button>
+    </form>
+
+    <p class="hint-msg">Нет доступа? Обратитесь к администратору площадки — он создаст вам логин и пароль.</p>
+  </div>
+</div>
+
+<script type="module">
+  import { supabase } from "./js/auth.js";
+
+  const form = document.getElementById("loginForm");
+  const errorMsg = document.getElementById("errorMsg");
+  const submitBtn = document.getElementById("submitBtn");
+
+  // Если уже вошли — сразу перекидываем в кабинет
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = "dashboard.html";
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorMsg.classList.remove("show");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Входим…";
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      errorMsg.textContent = "Неверный email или пароль.";
+      errorMsg.classList.add("show");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Войти";
+      return;
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+
+    window.location.href = profile?.role === "admin" ? "admin.html" : "dashboard.html";
+  });
+</script>
+</body>
+</html>
