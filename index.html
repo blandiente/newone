@@ -18,8 +18,8 @@
 
     <form id="loginForm">
       <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" required autocomplete="username">
+        <label for="email">Логин</label>
+        <input type="text" id="email" required autocomplete="username">
       </div>
       <div class="field">
         <label for="password">Пароль</label>
@@ -33,7 +33,7 @@
 </div>
 
 <script type="module">
-  import { supabase } from "./js/auth.js";
+  import { supabase, toLoginEmail } from "./js/auth.js";
 
   const form = document.getElementById("loginForm");
   const errorMsg = document.getElementById("errorMsg");
@@ -50,7 +50,7 @@
     submitBtn.disabled = true;
     submitBtn.textContent = "Входим…";
 
-    const email = document.getElementById("email").value.trim();
+    const email = toLoginEmail(document.getElementById("email").value);
     const password = document.getElementById("password").value;
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
