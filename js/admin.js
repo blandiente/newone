@@ -54,7 +54,7 @@ async function createUser(e) {
   const { data: { session } } = await supabase.auth.getSession();
 
   try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-create-user`, {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/smooth-handler`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
