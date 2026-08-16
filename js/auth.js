@@ -3,6 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const LOGIN_DOMAIN = "@lms.learning";
+export function toLoginEmail(raw) {
+  const value = (raw || "").trim().toLowerCase().replace(/\s+/g, "");
+  return value.includes("@") ? value : value + LOGIN_DOMAIN;
+}
 
 // Возвращает { user, profile } или редиректит на index.html, если не вошёл.
 // requireAdmin=true — дополнительно проверяет роль admin.
