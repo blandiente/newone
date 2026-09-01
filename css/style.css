@@ -22,8 +22,8 @@
   --bad-tint:   #F6E5E0;
 
   /* --- типографика --- */
-  --font-display: 'Fraunces', Georgia, serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Fraunces', Monserrat, serif;
+  --font-body: 'Inter', monserrat, sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 
   --radius: 10px;
