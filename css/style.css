@@ -25,7 +25,15 @@
   --font-display: 'Montserrat', serif;
   --font-body: 'Montserrat', sans-serif;
   --font-mono: 'Montserrat', sans-serif;
-
+   
+@font-face {
+  font-family: 'Druzhok';
+  src: url('/fonts/Druzhok-Regular.otf') format('otf');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+   
   --radius: 10px;
   --shadow: 0 1px 2px rgba(22,32,42,.06), 0 8px 24px rgba(22,32,42,.06);
 }
@@ -39,7 +47,11 @@ body{
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3,h4{
+h1.druzhok-title {
+  font-family: 'Druzhok', serif;
+  font-weight: 400;
+}
+h2,h3,h4{
   font-family:var(--font-display);
   color:var(--ink);
   margin:0 0 .4em;
