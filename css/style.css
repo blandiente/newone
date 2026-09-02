@@ -47,7 +47,7 @@ body{
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
 }
-h1.druzhok-title {
+h1,druzhok-title {
   font-family: 'Druzhok', serif;
   font-weight: 400;
 }
@@ -68,6 +68,20 @@ a{color:var(--brass-dark)}
   letter-spacing:.08em;
   text-transform:uppercase;
   color:var(--brass-dark);
+}
+.login-mark {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.login-mark img {
+    max-width: 180px;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
 }
 
 /* --- кнопки --- */
