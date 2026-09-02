@@ -49,7 +49,7 @@ body{
 }
 h1,druzhok-title {
   font-family: 'Druzhok', serif;
-  font-weight: 400;
+  font-weight: 300;
 }
 h2,h3,h4{
   font-family:var(--font-display);
