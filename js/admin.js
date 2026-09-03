@@ -5,8 +5,18 @@ const auth = await requireAuth({ requireAdmin: true });
 if (auth) {
   renderSidebarUser(auth.profile);
   setupTabs();
-  await Promise.all([loadUsers(), loadCoursesAdmin(), loadCourseOptions(), loadTestsAdmin(), loadKbAdmin(), loadProgress()]);
-  wireForms();
+  // формы подключаем сразу, чтобы создание работало даже если загрузка списков упала
+  try { wireForms(); } catch (e) { console.error("wireForms:", e); }
+  // загрузка списков — по отдельности, с защитой от падений
+  const safe = (name, fn) => fn().catch(err => console.error(name, err));
+  await Promise.all([
+    safe("loadUsers", loadUsers),
+    safe("loadCoursesAdmin", loadCoursesAdmin),
+    safe("loadCourseOptions", loadCourseOptions),
+    safe("loadTestsAdmin", loadTestsAdmin),
+    safe("loadKbAdmin", loadKbAdmin),
+    safe("loadProgress", loadProgress),
+  ]);
 }
 
 // ---------- вкладки ----------
@@ -223,11 +233,18 @@ async function createUser(e) {
 // ---------- КУРСЫ И УРОКИ ----------
 // кэш уроков для редактирования (id → данные)
 let lessonsCache = {};
+let kbRte = null;
 
 async function loadCoursesAdmin() {
-  const { data: courses } = await supabase
-    .from("courses").select("*, lessons(*)").order("order_index");
   const wrap = document.getElementById("coursesAdminList");
+  if (!wrap) return;
+  const { data: courses, error } = await supabase
+    .from("courses").select("*, lessons(*)").order("order_index");
+  if (error) {
+    wrap.innerHTML = `<p class="muted">Ошибка загрузки курсов: ${escapeHtml(error.message)}</p>`;
+    console.error("loadCoursesAdmin", error);
+    return;
+  }
   if (!courses || !courses.length) { wrap.innerHTML = `<p class="muted">Курсов пока нет.</p>`; return; }
 
   lessonsCache = {};
@@ -413,20 +430,23 @@ function openEditLesson(e) {
   panel.style.display = "block";
   panel.innerHTML = `
     <div class="field"><label>Название урока</label>
-      <input type="text" class="edit_title" value="${escapeHtml(lesson.title)}" required>
+      <input type="text" class="edit_title" required>
     </div>
     <div class="field">
       <label>Текст урока</label>
       <div class="edit_content_rte"></div>
     </div>
     <div class="field"><label>Ссылка на видео</label>
-      <input type="text" class="edit_video" value="${escapeHtml(lesson.video_url || "")}">
+      <input type="text" class="edit_video">
     </div>
     <div class="edit-lesson-actions">
       <button type="button" class="btn btn-brass btn-save-lesson">Сохранить</button>
       <button type="button" class="btn btn-ghost btn-cancel-edit">Отмена</button>
     </div>
   `;
+
+  panel.querySelector(".edit_title").value = lesson.title || "";
+  panel.querySelector(".edit_video").value = lesson.video_url || "";
 
   const rte = createRte("Текст урока…");
   panel.querySelector(".edit_content_rte").appendChild(rte.wrap);
@@ -475,6 +495,7 @@ async function delLesson(e) {
 async function loadCourseOptions() {
   const { data: courses } = await supabase.from("courses").select("id,title").order("order_index");
   const select = document.getElementById("t_course");
+  if (!select) return;
   select.innerHTML = (courses || []).map(c => `<option value="${c.id}">${escapeHtml(c.title)}</option>`).join("");
 }
 
@@ -582,8 +603,6 @@ async function addQuestion(e) {
 }
 
 // ---------- БАЗА ЗНАНИЙ ----------
-let kbRte = null;
-
 async function createKb(e) {
   e.preventDefault();
   const contentHtml = kbRte ? kbRte.getHtml() : document.getElementById("kb_content")?.value?.trim() || "";
@@ -669,22 +688,28 @@ async function loadProgress() {
 }
 
 function wireForms() {
-  document.getElementById("createUserForm").addEventListener("submit", createUser);
-  document.getElementById("createCourseForm").addEventListener("submit", createCourse);
-  document.getElementById("createTestForm").addEventListener("submit", createTest);
+  const userForm = document.getElementById("createUserForm");
+  const courseForm = document.getElementById("createCourseForm");
+  const testForm = document.getElementById("createTestForm");
+  const kbForm = document.getElementById("createKbForm");
+
+  if (userForm) userForm.addEventListener("submit", createUser);
+  if (courseForm) courseForm.addEventListener("submit", createCourse);
+  if (testForm) testForm.addEventListener("submit", createTest);
 
   // KB form + RTE
-  const kbForm = document.getElementById("createKbForm");
-  const oldTa = document.getElementById("kb_content");
-  if (oldTa) {
-    const kbContentField = oldTa.closest(".field");
-    if (kbContentField) {
-      const label = kbContentField.querySelector("label");
-      kbContentField.innerHTML = "";
-      if (label) kbContentField.appendChild(label);
-      kbRte = createRte("Текст статьи. Форматирование, таблицы, фото.");
-      kbContentField.appendChild(kbRte.wrap);
+  if (kbForm) {
+    const oldTa = document.getElementById("kb_content");
+    if (oldTa) {
+      const kbContentField = oldTa.closest(".field");
+      if (kbContentField) {
+        const label = kbContentField.querySelector("label");
+        kbContentField.innerHTML = "";
+        if (label) kbContentField.appendChild(label);
+        kbRte = createRte("Текст статьи. Форматирование, таблицы, фото.");
+        kbContentField.appendChild(kbRte.wrap);
+      }
     }
+    kbForm.addEventListener("submit", createKb);
   }
-  kbForm.addEventListener("submit", createKb);
 }
