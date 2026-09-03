@@ -27,6 +27,138 @@ function escapeHtml(str) {
   return d.innerHTML;
 }
 
+// ---------- RICH TEXT EDITOR ----------
+function createRte(placeholder = "Текст…") {
+  const wrap = document.createElement("div");
+  wrap.className = "rte-wrap";
+
+  const toolbar = document.createElement("div");
+  toolbar.className = "rte-toolbar";
+  toolbar.innerHTML = `
+    <button type="button" data-cmd="bold" title="Жирный"><b>B</b></button>
+    <button type="button" data-cmd="italic" title="Курсив"><i>I</i></button>
+    <button type="button" data-cmd="underline" title="Подчёркнутый"><u>U</u></button>
+    <span class="rte-sep"></span>
+    <button type="button" data-cmd="fontSizeDown" title="Уменьшить шрифт">A−</button>
+    <button type="button" data-cmd="fontSizeUp" title="Увеличить шрифт">A+</button>
+    <span class="rte-sep"></span>
+    <button type="button" data-cmd="insertUnorderedList" title="Список">• Список</button>
+    <button type="button" data-cmd="insertOrderedList" title="Нумерованный">1. Список</button>
+    <span class="rte-sep"></span>
+    <button type="button" data-cmd="insertTable" title="Вставить таблицу">Таблица</button>
+    <button type="button" data-cmd="insertImage" title="Вставить фото по URL">Фото URL</button>
+    <label class="rte-btn" title="Загрузить фото с компьютера">
+      📷 Файл
+      <input type="file" accept="image/*" style="display:none" data-cmd="uploadImage">
+    </label>
+  `;
+
+  const editor = document.createElement("div");
+  editor.className = "rte-editor";
+  editor.contentEditable = "true";
+  editor.dataset.placeholder = placeholder;
+
+  wrap.appendChild(toolbar);
+  wrap.appendChild(editor);
+
+  // команды
+  toolbar.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-cmd]");
+    if (!btn) return;
+    e.preventDefault();
+    const cmd = btn.dataset.cmd;
+    editor.focus();
+
+    if (cmd === "fontSizeUp" || cmd === "fontSizeDown") {
+      changeFontSize(editor, cmd === "fontSizeUp" ? 1 : -1);
+      return;
+    }
+    if (cmd === "insertTable") {
+      insertTable(editor);
+      return;
+    }
+    if (cmd === "insertImage") {
+      const url = prompt("Вставьте ссылку на изображение (https://…):");
+      if (url && url.trim()) {
+        document.execCommand("insertImage", false, url.trim());
+      }
+      return;
+    }
+    document.execCommand(cmd, false, null);
+  });
+
+  // загрузка файла → base64
+  toolbar.querySelector('input[data-cmd="uploadImage"]').addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 1.5 * 1024 * 1024) {
+      showToast("Файл слишком большой (макс. ~1.5 МБ). Сожмите изображение.");
+      e.target.value = "";
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      editor.focus();
+      document.execCommand("insertImage", false, reader.result);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  });
+
+  // запрет вставки «грязного» HTML при paste — оставляем форматирование, но чистим
+  editor.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    document.execCommand("insertText", false, text);
+  });
+
+  return { wrap, editor, getHtml: () => editor.innerHTML.trim(), setHtml: (html) => { editor.innerHTML = html || ""; } };
+}
+
+function changeFontSize(editor, delta) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  if (range.collapsed) {
+    // применить к будущему тексту
+    const span = document.createElement("span");
+    const current = parseInt(window.getComputedStyle(editor).fontSize) || 15;
+    span.style.fontSize = (current + delta * 2) + "px";
+    span.appendChild(document.createTextNode("\u200B"));
+    range.insertNode(span);
+    range.setStart(span.firstChild, 1);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    return;
+  }
+  // обёртка выделенного
+  const span = document.createElement("span");
+  const size = Math.max(10, Math.min(28, (parseInt(window.getComputedStyle(range.commonAncestorContainer.parentElement || editor).fontSize) || 15) + delta * 2));
+  span.style.fontSize = size + "px";
+  try {
+    range.surroundContents(span);
+  } catch {
+    // если выделение пересекает границы — просто меняем размер через execCommand fallback
+    document.execCommand("fontSize", false, delta > 0 ? "5" : "2");
+  }
+}
+
+function insertTable(editor) {
+  const rows = prompt("Количество строк:", "3");
+  const cols = prompt("Количество столбцов:", "3");
+  const r = Math.min(10, Math.max(1, parseInt(rows) || 3));
+  const c = Math.min(8, Math.max(1, parseInt(cols) || 3));
+  let html = "<table><tbody>";
+  for (let i = 0; i < r; i++) {
+    html += "<tr>";
+    for (let j = 0; j < c; j++) html += "<td>&nbsp;</td>";
+    html += "</tr>";
+  }
+  html += "</tbody></table><p><br></p>";
+  document.execCommand("insertHTML", false, html);
+}
+
 // ---------- ПОЛЬЗОВАТЕЛИ ----------
 async function loadUsers() {
   const { data: users, error } = await supabase.from("profiles").select("*").order("created_at");
@@ -83,7 +215,9 @@ async function loadCoursesAdmin() {
   const wrap = document.getElementById("coursesAdminList");
   if (!courses || !courses.length) { wrap.innerHTML = `<p class="muted">Курсов пока нет.</p>`; return; }
 
-  wrap.innerHTML = courses.map(course => `
+  wrap.innerHTML = courses.map(course => {
+    const lessons = (course.lessons || []).sort((a, b) => a.order_index - b.order_index);
+    return `
     <div class="card" style="margin-bottom:1rem">
       <div class="row" style="display:flex;justify-content:space-between;align-items:start">
         <div>
@@ -93,11 +227,17 @@ async function loadCoursesAdmin() {
         <button class="small-x" data-del-course="${course.id}" title="Удалить курс">✕</button>
       </div>
 
-      ${(course.lessons || []).sort((a,b)=>a.order_index-b.order_index).map(l => `
+      ${lessons.map((l, idx) => `
         <div class="repeater-item">
-          <div class="row" style="justify-content:space-between">
+          <div class="row" style="justify-content:space-between;align-items:center">
             <b>${escapeHtml(l.title)}</b>
-            <button class="small-x" data-del-lesson="${l.id}">✕</button>
+            <div style="display:flex;align-items:center;gap:.4rem">
+              <div class="order-btns">
+                <button type="button" data-move-lesson="${l.id}" data-dir="-1" data-course="${course.id}" title="Выше" ${idx === 0 ? "disabled" : ""}>↑</button>
+                <button type="button" data-move-lesson="${l.id}" data-dir="1" data-course="${course.id}" title="Ниже" ${idx === lessons.length - 1 ? "disabled" : ""}>↓</button>
+              </div>
+              <button class="small-x" data-del-lesson="${l.id}">✕</button>
+            </div>
           </div>
         </div>`).join("")}
 
@@ -105,16 +245,29 @@ async function loadCoursesAdmin() {
         <summary style="cursor:pointer;font-size:.88rem;color:var(--brass-dark);font-weight:600">+ Добавить урок</summary>
         <form class="add-lesson-form" data-course="${course.id}" style="margin-top:.8em">
           <div class="field"><label>Название урока</label><input type="text" class="l_title" required></div>
-          <div class="field"><label>Текст урока (абзацы разделяйте пустой строкой)</label><textarea class="l_content" rows="4"></textarea></div>
+          <div class="field">
+            <label>Текст урока</label>
+            <div class="l_content_rte"></div>
+          </div>
           <div class="field"><label>Ссылка на видео (YouTube/Vimeo или .mp4) — необязательно</label><input type="text" class="l_video"></div>
           <button class="btn btn-ghost" type="submit">Добавить урок</button>
         </form>
       </details>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 
-  wrap.querySelectorAll(".add-lesson-form").forEach(f => f.addEventListener("submit", addLesson));
+  // инициализируем RTE для каждой формы добавления урока
+  wrap.querySelectorAll(".add-lesson-form").forEach(form => {
+    const container = form.querySelector(".l_content_rte");
+    const rte = createRte("Текст урока. Можно форматировать, вставлять таблицы и фото.");
+    container.appendChild(rte.wrap);
+    form._rte = rte;
+    form.addEventListener("submit", addLesson);
+  });
+
   wrap.querySelectorAll("[data-del-course]").forEach(b => b.addEventListener("click", delCourse));
   wrap.querySelectorAll("[data-del-lesson]").forEach(b => b.addEventListener("click", delLesson));
+  wrap.querySelectorAll("[data-move-lesson]").forEach(b => b.addEventListener("click", moveLesson));
 }
 
 async function createCourse(e) {
@@ -135,16 +288,46 @@ async function addLesson(e) {
   e.preventDefault();
   const form = e.target;
   const courseId = form.dataset.course;
+  const contentHtml = form._rte ? form._rte.getHtml() : "";
   const { data: existing } = await supabase.from("lessons").select("id").eq("course_id", courseId);
   const { error } = await supabase.from("lessons").insert({
     course_id: courseId,
     title: form.querySelector(".l_title").value.trim(),
-    content: form.querySelector(".l_content").value.trim(),
+    content: contentHtml || "",
     video_url: form.querySelector(".l_video").value.trim() || null,
     order_index: (existing || []).length,
   });
   if (error) { showToast(error.message); return; }
   showToast("Урок добавлен");
+  await loadCoursesAdmin();
+}
+
+async function moveLesson(e) {
+  const btn = e.currentTarget;
+  const lessonId = btn.dataset.moveLesson;
+  const dir = Number(btn.dataset.dir);
+  const courseId = btn.dataset.course;
+
+  const { data: lessons } = await supabase
+    .from("lessons")
+    .select("id, order_index")
+    .eq("course_id", courseId)
+    .order("order_index");
+
+  if (!lessons || lessons.length < 2) return;
+
+  const idx = lessons.findIndex(l => l.id === lessonId);
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= lessons.length) return;
+
+  const a = lessons[idx];
+  const b = lessons[newIdx];
+
+  // swap order_index
+  await supabase.from("lessons").update({ order_index: b.order_index }).eq("id", a.id);
+  await supabase.from("lessons").update({ order_index: a.order_index }).eq("id", b.id);
+
+  showToast("Порядок изменён");
   await loadCoursesAdmin();
 }
 
@@ -268,25 +451,56 @@ async function addQuestion(e) {
 }
 
 // ---------- БАЗА ЗНАНИЙ ----------
+let kbRte = null;
+
 async function createKb(e) {
   e.preventDefault();
+  const contentHtml = kbRte ? kbRte.getHtml() : document.getElementById("kb_content")?.value?.trim() || "";
+  if (!contentHtml || contentHtml === "<br>" || contentHtml === "<div><br></div>") {
+    showToast("Введите текст статьи");
+    return;
+  }
+  const category = document.getElementById("kb_category").value.trim();
+  const title = document.getElementById("kb_title").value.trim();
+  if (!category || !title) {
+    showToast("Заполните категорию и заголовок");
+    return;
+  }
+
   const { data: existing } = await supabase.from("knowledge_base").select("id");
   const { error } = await supabase.from("knowledge_base").insert({
-    category: document.getElementById("kb_category").value.trim(),
-    title: document.getElementById("kb_title").value.trim(),
-    content: document.getElementById("kb_content").value.trim(),
+    category,
+    title,
+    content: contentHtml,
     order_index: (existing || []).length,
   });
-  if (error) { showToast(error.message); return; }
+  if (error) {
+    console.error("KB insert error:", error);
+    showToast(error.message || "Ошибка при добавлении статьи");
+    return;
+  }
   document.getElementById("createKbForm").reset();
+  if (kbRte) kbRte.setHtml("");
   showToast("Статья добавлена");
   await loadKbAdmin();
 }
 
 async function loadKbAdmin() {
-  const { data: items } = await supabase.from("knowledge_base").select("*").order("category").order("order_index");
+  const { data: items, error } = await supabase
+    .from("knowledge_base")
+    .select("*")
+    .order("category")
+    .order("order_index");
+
   const wrap = document.getElementById("kbAdminList");
-  if (!items || !items.length) { wrap.innerHTML = `<p class="muted">Статей пока нет.</p>`; return; }
+  if (error) {
+    wrap.innerHTML = `<p class="muted">Ошибка загрузки: ${escapeHtml(error.message)}</p>`;
+    return;
+  }
+  if (!items || !items.length) {
+    wrap.innerHTML = `<p class="muted">Статей пока нет.</p>`;
+    return;
+  }
 
   wrap.innerHTML = items.map(item => `
     <div class="repeater-item">
@@ -327,5 +541,19 @@ function wireForms() {
   document.getElementById("createUserForm").addEventListener("submit", createUser);
   document.getElementById("createCourseForm").addEventListener("submit", createCourse);
   document.getElementById("createTestForm").addEventListener("submit", createTest);
-  document.getElementById("createKbForm").addEventListener("submit", createKb);
+
+  // KB form + RTE
+  const kbForm = document.getElementById("createKbForm");
+  const oldTa = document.getElementById("kb_content");
+  if (oldTa) {
+    const kbContentField = oldTa.closest(".field");
+    if (kbContentField) {
+      const label = kbContentField.querySelector("label");
+      kbContentField.innerHTML = "";
+      if (label) kbContentField.appendChild(label);
+      kbRte = createRte("Текст статьи. Форматирование, таблицы, фото.");
+      kbContentField.appendChild(kbRte.wrap);
+    }
+  }
+  kbForm.addEventListener("submit", createKb);
 }

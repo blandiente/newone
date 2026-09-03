@@ -33,7 +33,11 @@ async function loadKB() {
 }
 
 function formatContent(text) {
-  return (text || "").split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+  if (!text) return "";
+  if (/<[a-z][\s\S]*>/i.test(text)) {
+    return `<div class="kb-content">${text}</div>`;
+  }
+  return text.split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
 }
 function escapeHtml(str) {
   const d = document.createElement("div");

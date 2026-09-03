@@ -22,7 +22,9 @@ async function loadLesson(userId) {
   }
 
   document.getElementById("lessonTitle").textContent = lesson.title;
-  document.getElementById("lessonContent").innerHTML = formatContent(lesson.content);
+  const contentEl = document.getElementById("lessonContent");
+  contentEl.classList.add("lesson-content");
+  contentEl.innerHTML = formatContent(lesson.content);
 
   const videoWrap = document.getElementById("videoWrap");
   if (lesson.video_url) {
@@ -56,9 +58,15 @@ async function loadLesson(userId) {
   });
 }
 
-// Текст урока хранится как обычный текст с пустыми строками между абзацами
+// Контент может быть HTML (из редактора) или старый plain-text
 function formatContent(text) {
-  return (text || "").split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+  if (!text) return "";
+  // если уже похоже на HTML — отдаём как есть (контент создаёт только админ)
+  if (/<[a-z][\s\S]*>/i.test(text)) {
+    return text;
+  }
+  // обратная совместимость со старыми уроками (plain text)
+  return text.split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
 }
 
 function isEmbeddable(url) {
