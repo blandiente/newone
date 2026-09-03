@@ -1,24 +1,6 @@
 import { supabase, requireAuth, renderSidebarUser, showToast } from "./auth.js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase-config.js";
 
-const auth = await requireAuth({ requireAdmin: true });
-if (auth) {
-  renderSidebarUser(auth.profile);
-  setupTabs();
-  // формы подключаем сразу, чтобы создание работало даже если загрузка списков упала
-  try { wireForms(); } catch (e) { console.error("wireForms:", e); }
-  // загрузка списков — по отдельности, с защитой от падений
-  const safe = (name, fn) => fn().catch(err => console.error(name, err));
-  await Promise.all([
-    safe("loadUsers", loadUsers),
-    safe("loadCoursesAdmin", loadCoursesAdmin),
-    safe("loadCourseOptions", loadCourseOptions),
-    safe("loadTestsAdmin", loadTestsAdmin),
-    safe("loadKbAdmin", loadKbAdmin),
-    safe("loadProgress", loadProgress),
-  ]);
-}
-
 // ---------- вкладки ----------
 function setupTabs() {
   document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -712,4 +694,21 @@ function wireForms() {
     }
     kbForm.addEventListener("submit", createKb);
   }
+}
+
+// ---------- старт (после всех объявлений, чтобы не было TDZ) ----------
+const auth = await requireAuth({ requireAdmin: true });
+if (auth) {
+  renderSidebarUser(auth.profile);
+  setupTabs();
+  try { wireForms(); } catch (e) { console.error("wireForms:", e); }
+  const safe = (name, fn) => fn().catch(err => console.error(name, err));
+  await Promise.all([
+    safe("loadUsers", loadUsers),
+    safe("loadCoursesAdmin", loadCoursesAdmin),
+    safe("loadCourseOptions", loadCourseOptions),
+    safe("loadTestsAdmin", loadTestsAdmin),
+    safe("loadKbAdmin", loadKbAdmin),
+    safe("loadProgress", loadProgress),
+  ]);
 }
