@@ -245,3 +245,36 @@ textarea{resize:vertical;min-height:6em}
 @media (prefers-reduced-motion: reduce){
   *{transition:none !important}
 }
+
+/* --- rich text editor --- */
+.rte-wrap{border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.rte-toolbar{
+  display:flex;flex-wrap:wrap;gap:.25rem;padding:.4rem .5rem;
+  border-bottom:1px solid var(--line);background:#FCFBF9;
+}
+.rte-toolbar button,.rte-toolbar label.rte-btn{
+  background:#fff;border:1px solid var(--line);border-radius:5px;
+  padding:.3em .55em;font-size:.8rem;cursor:pointer;font-family:var(--font-body);
+  color:var(--text);line-height:1.2;min-width:1.8em;text-align:center;
+}
+.rte-toolbar button:hover,.rte-toolbar label.rte-btn:hover{border-color:var(--brass);background:var(--brass-tint)}
+.rte-toolbar button:active{background:var(--brass);color:#fff}
+.rte-toolbar .rte-sep{width:1px;background:var(--line);margin:0 .25rem;align-self:stretch}
+.rte-editor{
+  min-height:120px;padding:.8em;outline:none;font-size:.95rem;line-height:1.55;
+  overflow-y:auto;max-height:400px;
+}
+.rte-editor:empty:before{content:attr(data-placeholder);color:var(--text-muted);pointer-events:none}
+.rte-editor table{border-collapse:collapse;width:100%;margin:.6em 0}
+.rte-editor td,.rte-editor th{border:1px solid var(--line);padding:.4em .6em;min-width:40px}
+.rte-editor img{max-width:100%;height:auto;border-radius:6px;margin:.5em 0}
+.rte-editor p{margin:0 0 .6em}
+.lesson-content img,.kb-content img{max-width:100%;height:auto;border-radius:6px;margin:.5em 0}
+.lesson-content table,.kb-content table{border-collapse:collapse;width:100%;margin:.8em 0}
+.lesson-content td,.lesson-content th,.kb-content td,.kb-content th{border:1px solid var(--line);padding:.45em .7em}
+.order-btns{display:flex;gap:.2rem}
+.order-btns button{
+  background:none;border:1px solid var(--line);border-radius:4px;
+  padding:.15em .4em;cursor:pointer;font-size:.75rem;color:var(--text-muted);line-height:1;
+}
+.order-btns button:hover{border-color:var(--brass);color:var(--brass-dark)}
