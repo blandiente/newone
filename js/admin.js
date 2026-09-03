@@ -28,6 +28,19 @@ function escapeHtml(str) {
 }
 
 // ---------- RICH TEXT EDITOR ----------
+const ICONS = {
+  bold: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 0 8H6z"/><path d="M6 12h9a4 4 0 0 1 0 8H6z"/></svg>`,
+  italic: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
+  underline: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></svg>`,
+  sizeDown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h7M8 4v16M14 12h7M17.5 9.5 14 12l3.5 2.5"/></svg>`,
+  sizeUp: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h8M9 4v16M15 9h6M18 6v6"/></svg>`,
+  ul: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>`,
+  ol: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="10" y1="18" x2="20" y2="18"/><text x="3" y="8" font-size="8" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">1</text><text x="3" y="14" font-size="8" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">2</text><text x="3" y="20" font-size="8" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">3</text></svg>`,
+  table: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>`,
+  image: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/><path d="M21 15l-5-5L5 21"/></svg>`,
+  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+};
+
 function createRte(placeholder = "Текст…") {
   const wrap = document.createElement("div");
   wrap.className = "rte-wrap";
@@ -35,20 +48,20 @@ function createRte(placeholder = "Текст…") {
   const toolbar = document.createElement("div");
   toolbar.className = "rte-toolbar";
   toolbar.innerHTML = `
-    <button type="button" data-cmd="bold" title="Жирный"><b>B</b></button>
-    <button type="button" data-cmd="italic" title="Курсив"><i>I</i></button>
-    <button type="button" data-cmd="underline" title="Подчёркнутый"><u>U</u></button>
+    <button type="button" data-cmd="bold" title="Жирный">${ICONS.bold}</button>
+    <button type="button" data-cmd="italic" title="Курсив">${ICONS.italic}</button>
+    <button type="button" data-cmd="underline" title="Подчёркнутый">${ICONS.underline}</button>
     <span class="rte-sep"></span>
-    <button type="button" data-cmd="fontSizeDown" title="Уменьшить шрифт">A−</button>
-    <button type="button" data-cmd="fontSizeUp" title="Увеличить шрифт">A+</button>
+    <button type="button" data-cmd="fontSizeDown" title="Уменьшить шрифт">${ICONS.sizeDown}</button>
+    <button type="button" data-cmd="fontSizeUp" title="Увеличить шрифт">${ICONS.sizeUp}</button>
     <span class="rte-sep"></span>
-    <button type="button" data-cmd="insertUnorderedList" title="Список">• Список</button>
-    <button type="button" data-cmd="insertOrderedList" title="Нумерованный">1. Список</button>
+    <button type="button" data-cmd="insertUnorderedList" title="Маркированный список">${ICONS.ul}</button>
+    <button type="button" data-cmd="insertOrderedList" title="Нумерованный список">${ICONS.ol}</button>
     <span class="rte-sep"></span>
-    <button type="button" data-cmd="insertTable" title="Вставить таблицу">Таблица</button>
-    <button type="button" data-cmd="insertImage" title="Вставить фото по URL">Фото URL</button>
+    <button type="button" data-cmd="insertTable" title="Вставить таблицу">${ICONS.table}</button>
+    <button type="button" data-cmd="insertImage" title="Фото по ссылке">${ICONS.image}</button>
     <label class="rte-btn" title="Загрузить фото с компьютера">
-      📷 Файл
+      ${ICONS.upload}
       <input type="file" accept="image/*" style="display:none" data-cmd="uploadImage">
     </label>
   `;
@@ -61,7 +74,6 @@ function createRte(placeholder = "Текст…") {
   wrap.appendChild(toolbar);
   wrap.appendChild(editor);
 
-  // команды
   toolbar.addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-cmd]");
     if (!btn) return;
@@ -87,7 +99,6 @@ function createRte(placeholder = "Текст…") {
     document.execCommand(cmd, false, null);
   });
 
-  // загрузка файла → base64
   toolbar.querySelector('input[data-cmd="uploadImage"]').addEventListener("change", async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -105,7 +116,6 @@ function createRte(placeholder = "Текст…") {
     e.target.value = "";
   });
 
-  // запрет вставки «грязного» HTML при paste — оставляем форматирование, но чистим
   editor.addEventListener("paste", (e) => {
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData("text/plain");
@@ -149,10 +159,12 @@ function insertTable(editor) {
   const cols = prompt("Количество столбцов:", "3");
   const r = Math.min(10, Math.max(1, parseInt(rows) || 3));
   const c = Math.min(8, Math.max(1, parseInt(cols) || 3));
-  let html = "<table><tbody>";
+  let html = '<table style="border-collapse:collapse;width:100%;border:2px solid #8a8478"><tbody>';
   for (let i = 0; i < r; i++) {
     html += "<tr>";
-    for (let j = 0; j < c; j++) html += "<td>&nbsp;</td>";
+    for (let j = 0; j < c; j++) {
+      html += '<td style="border:1.5px solid #8a8478;padding:8px 10px;min-width:60px">&nbsp;</td>';
+    }
     html += "</tr>";
   }
   html += "</tbody></table><p><br></p>";
@@ -209,16 +221,22 @@ async function createUser(e) {
 }
 
 // ---------- КУРСЫ И УРОКИ ----------
+// кэш уроков для редактирования (id → данные)
+let lessonsCache = {};
+
 async function loadCoursesAdmin() {
   const { data: courses } = await supabase
     .from("courses").select("*, lessons(*)").order("order_index");
   const wrap = document.getElementById("coursesAdminList");
   if (!courses || !courses.length) { wrap.innerHTML = `<p class="muted">Курсов пока нет.</p>`; return; }
 
+  lessonsCache = {};
+  courses.forEach(c => (c.lessons || []).forEach(l => { lessonsCache[l.id] = l; }));
+
   wrap.innerHTML = courses.map(course => {
     const lessons = (course.lessons || []).sort((a, b) => a.order_index - b.order_index);
     return `
-    <div class="card" style="margin-bottom:1rem">
+    <div class="card" style="margin-bottom:1rem" data-course-card="${course.id}">
       <div class="row" style="display:flex;justify-content:space-between;align-items:start">
         <div>
           <h3 style="margin-bottom:.15em">${escapeHtml(course.title)}</h3>
@@ -227,21 +245,23 @@ async function loadCoursesAdmin() {
         <button class="small-x" data-del-course="${course.id}" title="Удалить курс">✕</button>
       </div>
 
-      ${lessons.map((l, idx) => `
-        <div class="repeater-item">
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <b>${escapeHtml(l.title)}</b>
-            <div style="display:flex;align-items:center;gap:.4rem">
-              <div class="order-btns">
-                <button type="button" data-move-lesson="${l.id}" data-dir="-1" data-course="${course.id}" title="Выше" ${idx === 0 ? "disabled" : ""}>↑</button>
-                <button type="button" data-move-lesson="${l.id}" data-dir="1" data-course="${course.id}" title="Ниже" ${idx === lessons.length - 1 ? "disabled" : ""}>↓</button>
+      <div class="lesson-list" data-course-id="${course.id}">
+        ${lessons.map(l => `
+          <div class="lesson-item" data-lesson-id="${l.id}">
+            <div class="lesson-row" draggable="true" data-lesson-id="${l.id}" data-course-id="${course.id}">
+              <span class="drag-handle" title="Перетащите, чтобы изменить порядок">⋮⋮</span>
+              <span class="lesson-title-text">${escapeHtml(l.title)}</span>
+              <div class="lesson-actions">
+                <button type="button" class="btn-edit-lesson" data-edit-lesson="${l.id}">Изменить</button>
+                <button class="small-x" data-del-lesson="${l.id}" title="Удалить">✕</button>
               </div>
-              <button class="small-x" data-del-lesson="${l.id}">✕</button>
             </div>
+            <div class="edit-lesson-panel" data-edit-panel="${l.id}" style="display:none"></div>
           </div>
-        </div>`).join("")}
+        `).join("")}
+      </div>
 
-      <details style="margin-top:.8em">
+      <details style="margin-top:.4em">
         <summary style="cursor:pointer;font-size:.88rem;color:var(--brass-dark);font-weight:600">+ Добавить урок</summary>
         <form class="add-lesson-form" data-course="${course.id}" style="margin-top:.8em">
           <div class="field"><label>Название урока</label><input type="text" class="l_title" required></div>
@@ -256,7 +276,7 @@ async function loadCoursesAdmin() {
     </div>`;
   }).join("");
 
-  // инициализируем RTE для каждой формы добавления урока
+  // RTE для форм добавления
   wrap.querySelectorAll(".add-lesson-form").forEach(form => {
     const container = form.querySelector(".l_content_rte");
     const rte = createRte("Текст урока. Можно форматировать, вставлять таблицы и фото.");
@@ -267,7 +287,76 @@ async function loadCoursesAdmin() {
 
   wrap.querySelectorAll("[data-del-course]").forEach(b => b.addEventListener("click", delCourse));
   wrap.querySelectorAll("[data-del-lesson]").forEach(b => b.addEventListener("click", delLesson));
-  wrap.querySelectorAll("[data-move-lesson]").forEach(b => b.addEventListener("click", moveLesson));
+  wrap.querySelectorAll("[data-edit-lesson]").forEach(b => b.addEventListener("click", openEditLesson));
+
+  // drag & drop
+  wrap.querySelectorAll(".lesson-list").forEach(list => initLessonDragDrop(list));
+}
+
+function initLessonDragDrop(list) {
+  let dragItem = null;
+
+  list.querySelectorAll(".lesson-item").forEach(item => {
+    const row = item.querySelector(".lesson-row");
+    if (!row) return;
+
+    row.addEventListener("dragstart", (e) => {
+      dragItem = item;
+      row.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", item.dataset.lessonId);
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      list.querySelectorAll(".lesson-row").forEach(r => r.classList.remove("drag-over"));
+      dragItem = null;
+    });
+    row.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const targetRow = e.currentTarget;
+      if (targetRow.closest(".lesson-item") !== dragItem) {
+        targetRow.classList.add("drag-over");
+      }
+    });
+    row.addEventListener("dragleave", (e) => {
+      e.currentTarget.classList.remove("drag-over");
+    });
+    row.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      const targetRow = e.currentTarget;
+      targetRow.classList.remove("drag-over");
+      const targetItem = targetRow.closest(".lesson-item");
+      if (!dragItem || !targetItem || dragItem === targetItem) return;
+
+      const courseId = list.dataset.courseId;
+      const items = [...list.querySelectorAll(".lesson-item")];
+      const fromIdx = items.indexOf(dragItem);
+      const toIdx = items.indexOf(targetItem);
+      if (fromIdx < 0 || toIdx < 0) return;
+
+      if (fromIdx < toIdx) {
+        targetItem.after(dragItem);
+      } else {
+        targetItem.before(dragItem);
+      }
+
+      const newOrder = [...list.querySelectorAll(".lesson-item")].map(el => el.dataset.lessonId);
+      await saveLessonOrder(courseId, newOrder);
+    });
+  });
+}
+
+async function saveLessonOrder(courseId, orderedIds) {
+  try {
+    await Promise.all(orderedIds.map((id, index) =>
+      supabase.from("lessons").update({ order_index: index }).eq("id", id)
+    ));
+    showToast("Порядок уроков сохранён");
+  } catch (err) {
+    showToast("Не удалось сохранить порядок");
+    console.error(err);
+  }
 }
 
 async function createCourse(e) {
@@ -302,33 +391,74 @@ async function addLesson(e) {
   await loadCoursesAdmin();
 }
 
-async function moveLesson(e) {
-  const btn = e.currentTarget;
-  const lessonId = btn.dataset.moveLesson;
-  const dir = Number(btn.dataset.dir);
-  const courseId = btn.dataset.course;
+function openEditLesson(e) {
+  const lessonId = e.currentTarget.dataset.editLesson;
+  const lesson = lessonsCache[lessonId];
+  if (!lesson) return;
 
-  const { data: lessons } = await supabase
-    .from("lessons")
-    .select("id, order_index")
-    .eq("course_id", courseId)
-    .order("order_index");
+  const panel = document.querySelector(`[data-edit-panel="${lessonId}"]`);
+  if (!panel) return;
 
-  if (!lessons || lessons.length < 2) return;
+  // закрыть другие открытые панели
+  document.querySelectorAll(".edit-lesson-panel").forEach(p => {
+    if (p !== panel) { p.style.display = "none"; p.innerHTML = ""; }
+  });
 
-  const idx = lessons.findIndex(l => l.id === lessonId);
-  const newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= lessons.length) return;
+  if (panel.style.display === "block") {
+    panel.style.display = "none";
+    panel.innerHTML = "";
+    return;
+  }
 
-  const a = lessons[idx];
-  const b = lessons[newIdx];
+  panel.style.display = "block";
+  panel.innerHTML = `
+    <div class="field"><label>Название урока</label>
+      <input type="text" class="edit_title" value="${escapeHtml(lesson.title)}" required>
+    </div>
+    <div class="field">
+      <label>Текст урока</label>
+      <div class="edit_content_rte"></div>
+    </div>
+    <div class="field"><label>Ссылка на видео</label>
+      <input type="text" class="edit_video" value="${escapeHtml(lesson.video_url || "")}">
+    </div>
+    <div class="edit-lesson-actions">
+      <button type="button" class="btn btn-brass btn-save-lesson">Сохранить</button>
+      <button type="button" class="btn btn-ghost btn-cancel-edit">Отмена</button>
+    </div>
+  `;
 
-  // swap order_index
-  await supabase.from("lessons").update({ order_index: b.order_index }).eq("id", a.id);
-  await supabase.from("lessons").update({ order_index: a.order_index }).eq("id", b.id);
+  const rte = createRte("Текст урока…");
+  panel.querySelector(".edit_content_rte").appendChild(rte.wrap);
+  // старый контент мог быть plain text — показываем как есть
+  if (lesson.content && /<[a-z][\s\S]*>/i.test(lesson.content)) {
+    rte.setHtml(lesson.content);
+  } else {
+    rte.setHtml((lesson.content || "").split(/\n{2,}/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join(""));
+  }
+  panel._rte = rte;
 
-  showToast("Порядок изменён");
-  await loadCoursesAdmin();
+  panel.querySelector(".btn-cancel-edit").addEventListener("click", () => {
+    panel.style.display = "none";
+    panel.innerHTML = "";
+  });
+
+  panel.querySelector(".btn-save-lesson").addEventListener("click", async () => {
+    const title = panel.querySelector(".edit_title").value.trim();
+    if (!title) { showToast("Укажите название"); return; }
+    const content = panel._rte.getHtml();
+    const video = panel.querySelector(".edit_video").value.trim() || null;
+
+    const { error } = await supabase.from("lessons").update({
+      title,
+      content,
+      video_url: video,
+    }).eq("id", lessonId);
+
+    if (error) { showToast(error.message); return; }
+    showToast("Урок обновлён");
+    await loadCoursesAdmin();
+  });
 }
 
 async function delCourse(e) {
@@ -337,6 +467,7 @@ async function delCourse(e) {
   await Promise.all([loadCoursesAdmin(), loadCourseOptions()]);
 }
 async function delLesson(e) {
+  if (!confirm("Удалить урок?")) return;
   await supabase.from("lessons").delete().eq("id", e.target.dataset.delLesson);
   await loadCoursesAdmin();
 }
